@@ -1,0 +1,17 @@
+
+{
+    
+    "files.autoSave": "onFocusChange",
+    "editor.formatOnSave": true,
+    "eslint.alwaysShowStatus": true,
+    "eslint.format.enable": true,
+    "eslint.packageManager": "yarn",
+    "eslint.run": "onSave",
+    "eslint.codeActionsOnSave.mode": "all",
+    "eslint.codeAction.showDocumentation": {
+      "enable": true
+    },
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true
+    },
+}
