@@ -39,7 +39,7 @@ const monster = {
 
 const character = {
     maxHealth: 10,
-    name: "Евстафий",  
+    name: "Евстафий",
     moves: [
         {
             "name": "Удар боевым кадилом",
@@ -93,32 +93,32 @@ function turn(character, monster) {
     let characterXP = character.maxHealth
     let monsterXP = monster.maxHealth
 
-    
+
     characterXP = difficulty(characterXP)
 
-    while(!end){
+    while (!end) {
         console.log("_____________________________________");
         console.log(`turn ${turns}`)
 
-        console.log(`______Character______ XP: ${characterXP}`) 
+        console.log(`______Character______ XP: ${characterXP}`)
         getLogSkill(charEnableMoves, charCooldownMoves)
 
-        console.log(`______Monster______ XP: ${monsterXP}`) 
+        console.log(`______Monster______ XP: ${monsterXP}`)
         getLogSkill(monsterEnableMoves, monsterCooldownMoves)
-   
+
         randNum = getRandomSkill(monsterEnableMoves)
         SkillsAns = getSkillCharater(charEnableMoves, charCooldownMoves)
- 
+
         cooldownTurn(SkillsAns, charEnableMoves, charCooldownMoves, charMovesArr)
         cooldownTurn(randNum, monsterEnableMoves, monsterCooldownMoves, monsterMovesArr)
 
         characterXP = checkCharaterSkills(characterXP, SkillsAns, randNum, monsterMovesArr, charMovesArr)
         monsterXP = checkMonsterSkills(monsterXP, SkillsAns, randNum, monsterMovesArr, charMovesArr)
 
-    
+
         end = gameOver(characterXP, monsterXP)
         turns++
-    }    
+    }
 }
 
 function gameOver(chMaxHealth, monsMaxHealth) {
@@ -132,36 +132,36 @@ function gameOver(chMaxHealth, monsMaxHealth) {
         return true
     } else if (monsMaxHealth <= 0) {
         console.log('the fight is over')
-        console.log('charater win')  
+        console.log('charater win')
         return true
     }
 }
 
 function checkCharaterSkills(characterXP, SkillsAns, randNum, monsterMovesArr, charMovesArr) {
-    characterXP = characterXP - monsterMovesArr[randNum].physicalDmg * (1 - (charMovesArr[SkillsAns].physicArmorPercents/100));
-    characterXP = characterXP - monsterMovesArr[randNum].magicDmg * (1 - (charMovesArr[SkillsAns].magicArmorPercents/100));
+    characterXP = characterXP - monsterMovesArr[randNum].physicalDmg * (1 - (charMovesArr[SkillsAns].physicArmorPercents / 100));
+    characterXP = characterXP - monsterMovesArr[randNum].magicDmg * (1 - (charMovesArr[SkillsAns].magicArmorPercents / 100));
     return characterXP
 }
 
 function checkMonsterSkills(monsterXP, SkillsAns, randNum, monsterMovesArr, charMovesArr) {
-    monsterXP = monsterXP - charMovesArr[SkillsAns].physicalDmg * (1 - (monsterMovesArr[randNum].physicArmorPercents/100));
-    monsterXP =  monsterXP - charMovesArr[SkillsAns].magicDmg * (1 - (monsterMovesArr[randNum].magicArmorPercents/100));
+    monsterXP = monsterXP - charMovesArr[SkillsAns].physicalDmg * (1 - (monsterMovesArr[randNum].physicArmorPercents / 100));
+    monsterXP = monsterXP - charMovesArr[SkillsAns].magicDmg * (1 - (monsterMovesArr[randNum].magicArmorPercents / 100));
     return monsterXP
 }
 
 function getRandomSkill(arr) {
-   return randNumb = Math.floor(Math.random() * (arr.length) + 1) - 1;
+    return randNumb = Math.floor(Math.random() * (arr.length) + 1) - 1;
 }
 
 
-function getSkillCharater(enableMoves, cooldownMoves){
+function getSkillCharater(enableMoves, cooldownMoves) {
     let trueSkill = true
     let Skill = 0
-    while(trueSkill) {
+    while (trueSkill) {
         if (isNaN(Skill = parseInt(readlineSync.question('What skill do you want to use? '), 10)) || Skill >= enableMoves.length || Skill < 0) {
             console.log("The skill is not correct. Try again")
             getLogSkill(enableMoves, cooldownMoves)
-        } else { 
+        } else {
             trueSkill = false
         }
     }
@@ -172,32 +172,32 @@ function getSkillCharater(enableMoves, cooldownMoves){
 function cooldownTurn(skillNumber, enableMoves, cooldownMoves, movesArr) {
     cooldownMoves.push(enableMoves[skillNumber])
     enableMoves.splice(skillNumber, 1)
-  
+
     for (let index = 0; index < cooldownMoves.length; index++) {
-      if (cooldownMoves[index].cooldown != 0) {
-          cooldownMoves[index].cooldown -= 1
-      } else {
-        for (let i = 0; i < movesArr.length; i++) {
-            if (cooldownMoves.length != 0) { 
-                if (cooldownMoves[index].name == movesArr[i].name) {
-                cooldownMoves[index].cooldown = movesArr[i].cooldown
-                enableMoves.push(cooldownMoves[index])
-                cooldownMoves.splice(index, 1)
-                index--
-                break
+        if (cooldownMoves[index].cooldown != 0) {
+            cooldownMoves[index].cooldown -= 1
+        } else {
+            for (let i = 0; i < movesArr.length; i++) {
+                if (cooldownMoves.length != 0) {
+                    if (cooldownMoves[index].name == movesArr[i].name) {
+                        cooldownMoves[index].cooldown = movesArr[i].cooldown
+                        enableMoves.push(cooldownMoves[index])
+                        cooldownMoves.splice(index, 1)
+                        index--
+                        break
+                    }
                 }
             }
         }
-	  }      
     }
 }
 
 function difficulty(characterXP) {
     let trueHeath = true
-    while(trueHeath) {
+    while (trueHeath) {
         if (isNaN(characterXP = parseInt(readlineSync.question('Maximum XP of the charater? '), 10)) || characterXP <= 0) {
             console.log("The XP of the charater is not correct. Try again");
-        } else { 
+        } else {
             trueHeath = false
         }
     }
@@ -206,15 +206,15 @@ function difficulty(characterXP) {
 }
 
 
-function getLogSkill(EnableMoves, cooldownMoves){
-    console.log("Enable Moves:")   
-    for (let index = 0; index < EnableMoves.length; index++) {   
+function getLogSkill(EnableMoves, cooldownMoves) {
+    console.log("Enable Moves:")
+    for (let index = 0; index < EnableMoves.length; index++) {
         console.log(`${index}: ${EnableMoves[index].name}`)
     }
     if (cooldownMoves.length != 0) {
         console.log("Cooldown Moves:")
         for (let index = 0; index < cooldownMoves.length; index++) {
-        console.log(`${index}: ${cooldownMoves[index].name} cooldown: ${cooldownMoves[index].cooldown}`)
+            console.log(`${index}: ${cooldownMoves[index].name} cooldown: ${cooldownMoves[index].cooldown}`)
         }
     }
 }

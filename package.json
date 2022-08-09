@@ -1,4 +1,11 @@
 {
+  "name": "testcase",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "task_1": "node task_1.js",
+    "task_2": "node task_2.js"
+  },
   "dependencies": {
     "readline-sync": "^1.4.10"
   },
