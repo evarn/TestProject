@@ -3,10 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "task_1": "node task_1.js",
-    "task_2": "node task_2.js",
-    "task_3": "node bullsAndCows.js",
-    "task_4": "node RPG_battle.js"
+    "task_1": "node ./task_1/task_1.js",
+    "task_3": "node ./task_3/bullsAndCows.js",
+    "task_4": "node ./task_4/RPG_battle.js"
   },
   "dependencies": {
     "readline-sync": "^1.4.10"
