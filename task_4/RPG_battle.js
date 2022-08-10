@@ -1,4 +1,4 @@
-// Проект 2. RPG баттл
+// Задание 4. RPG баттл
 // Бой идет по ходам. 
 // Каждый ход компьютер (Лютый) случайно выбирает одно из доступных действий
 // и сообщает, что он собирается делать. 
@@ -8,6 +8,20 @@
 // После совершения действия, оно не может быть повторно выбрано в течение cooldown ходов
 // Бой идет до победы одного из противников.
 // Перед началом боя игрок выбирает сложность (начальное здоровье Евстафия)
+
+// *** Структура программы ***
+// turn - Основная функция 
+// Создание массивов навыков для "monster" и "character"
+// Использован JSON.stringify,
+// так как необходима глубокая копия объектов 'monster' и 'character'
+// Выбор сложности - difficulty
+// Бесконечный цикл while
+// Отрисовка навыков - getLogSkill
+// Выбор случайного навыка монстра - getRandomSkill
+// Выбора навыка игроком - getSkillCharater
+// Нанесение урона игроку и монстру - monsterDamage и charDamage
+// Блокировка использованных навыков - cooldownTurn
+// Проверки окончания игры - checkGameOver
 
 
 const monster = {
@@ -39,7 +53,7 @@ const monster = {
             "cooldown": 2
         },
     ],
-};
+}
 
 const character = {
     maxHealth: 10,
@@ -78,116 +92,143 @@ const character = {
             "cooldown": 4
         },
     ],
-};
+}
 
-const readlineSync = require('readline-sync');
+const readlineSync = require('readline-sync')
 
-function turn(character, monster) {
+const turn = function (char, monst) {
     let turns = 1
     let end = false
 
-    const charMovesArr = JSON.parse(JSON.stringify(character.moves))
-    let charEnableMoves = JSON.parse(JSON.stringify(charMovesArr))
-    let charCooldownMoves = []
+    // Массивы навыков для "monster" и "character"
+    // MovesArr - массив всех навыков, необходим для подсчета cooldown
+    // EnableMoves - массив доступных навыков
+    // CooldownMoves - массив навыков в cooldown
+    const charMovesArr = JSON.parse(JSON.stringify(char.moves))
+    const charEnableMoves = JSON.parse(JSON.stringify(charMovesArr))
+    const charCooldownMoves = []
+    const monsterMovesArr = JSON.parse(JSON.stringify(monst.moves))
+    const monsterEnableMoves = JSON.parse(JSON.stringify(monsterMovesArr))
+    const monsterCooldownMoves = []
 
-    const monsterMovesArr = JSON.parse(JSON.stringify(monster.moves))
-    let monsterEnableMoves = JSON.parse(JSON.stringify(monsterMovesArr))
-    let monsterCooldownMoves = []
+    // Начальное здоровье
+    let characterXP = char.maxHealth
+    let monsterXP = monst.maxHealth
 
-    let characterXP = character.maxHealth
-    let monsterXP = monster.maxHealth
-
-
+    // Выбор сложности/максимального здоровья игрока
     characterXP = difficulty(characterXP)
 
     while (!end) {
-        console.log("_____________________________________");
-        console.log(`turn ${turns}`)
+        // Количство ходов
+        console.log(`\nTurn ${turns}`)
 
-        console.log(`______Character______ XP: ${characterXP}`)
+        // Здоровье и навыки игрока
+        console.log(`______Character______ \n ______XP: ${characterXP}______\n`)
         getLogSkill(charEnableMoves, charCooldownMoves)
 
-        console.log(`______Monster______ XP: ${monsterXP}`)
-        getLogSkill(monsterEnableMoves, monsterCooldownMoves)
+        // Здоровье монстра
+        console.log(`\n______Monster______ \n ______XP: ${monsterXP}______\n`)
 
-        randNum = getRandomSkill(monsterEnableMoves)
-        SkillsAns = getSkillCharater(charEnableMoves, charCooldownMoves)
+        // Монстр выбирает навык
+        monsterSkill = getRandomSkill(monsterEnableMoves)
 
-        cooldownTurn(SkillsAns, charEnableMoves, charCooldownMoves, charMovesArr)
-        cooldownTurn(randNum, monsterEnableMoves, monsterCooldownMoves, monsterMovesArr)
+        // Игрок выбирает навык
+        userSkillChoice = getSkillCharater(charEnableMoves, charCooldownMoves)
 
-        characterXP = checkCharaterSkills(characterXP, SkillsAns, randNum, monsterMovesArr, charMovesArr)
-        monsterXP = checkMonsterSkills(monsterXP, SkillsAns, randNum, monsterMovesArr, charMovesArr)
+        // Нанесение урона
+        characterXP = monsterDamage(characterXP, userSkillChoice, monsterSkill, monsterEnableMoves, charEnableMoves)
+        monsterXP = charDamage(monsterXP, userSkillChoice, monsterSkill, monsterEnableMoves, charEnableMoves)
+
+        // Проверка cooldowns навыков
+        cooldownTurn(userSkillChoice, charEnableMoves, charCooldownMoves, charMovesArr)
+        cooldownTurn(monsterSkill, monsterEnableMoves, monsterCooldownMoves, monsterMovesArr)
 
 
-        end = gameOver(characterXP, monsterXP)
+        // Проверка окончания игры
+        end = checkGameOver(characterXP, monsterXP)
+
         turns++
     }
 }
 
-function gameOver(chMaxHealth, monsMaxHealth) {
-    if (chMaxHealth <= 0 && monsMaxHealth <= 0) {
-        console.log('the fight is over')
-        console.log('nobody won')
+// Функция проверки окончания игры
+const checkGameOver = function (chXP, monstXP) {
+    if (chXP <= 0 && monstXP <= 0) {
+        console.log('\n**** The fight is over **** \n **** Nobody won ****')
         return true
-    } else if (chMaxHealth <= 0) {
-        console.log('the fight is over')
-        console.log('monster win')
+    } else if (chXP <= 0) {
+        console.log('\n**** The fight is over **** \n **** Monster win ****')
         return true
-    } else if (monsMaxHealth <= 0) {
-        console.log('the fight is over')
-        console.log('charater win')
+    } else if (monstXP <= 0) {
+        console.log('\n**** The fight is over **** \n **** Charater win ****')
         return true
     }
 }
 
-function checkCharaterSkills(characterXP, SkillsAns, randNum, monsterMovesArr, charMovesArr) {
-    characterXP = characterXP - monsterMovesArr[randNum].physicalDmg * (1 - (charMovesArr[SkillsAns].physicArmorPercents / 100));
-    characterXP = characterXP - monsterMovesArr[randNum].magicDmg * (1 - (charMovesArr[SkillsAns].magicArmorPercents / 100));
-    return characterXP
+// Функция нанесения урона игроку
+const monsterDamage = function (charXP, charSkills, monstSkill, monsterMoves, charMoves) {
+    let XP = charXP
+    XP = XP - monsterMoves[monstSkill].physicalDmg * (1 - (charMoves[charSkills].physicArmorPercents / 100));
+    XP = XP - monsterMoves[monstSkill].magicDmg * (1 - (charMoves[charSkills].magicArmorPercents / 100));
+    return +XP.toFixed(2)
 }
 
-function checkMonsterSkills(monsterXP, SkillsAns, randNum, monsterMovesArr, charMovesArr) {
-    monsterXP = monsterXP - charMovesArr[SkillsAns].physicalDmg * (1 - (monsterMovesArr[randNum].physicArmorPercents / 100));
-    monsterXP = monsterXP - charMovesArr[SkillsAns].magicDmg * (1 - (monsterMovesArr[randNum].magicArmorPercents / 100));
-    return monsterXP
+// Функция нанесения урона монстру
+const charDamage = function (monsXP, charSkills, monstSkill, monsterMoves, charMoves) {
+    let XP = monsXP
+    XP = XP - charMoves[charSkills].physicalDmg * (1 - (monsterMoves[monstSkill].physicArmorPercents / 100));
+    XP = XP - charMoves[charSkills].magicDmg * (1 - (monsterMoves[monstSkill].magicArmorPercents / 100));
+    return +XP.toFixed(2)
 }
 
-function getRandomSkill(arr) {
+// Функция выбора случайного навыка
+const getRandomSkill = function (arr) {
     return randNumb = Math.floor(Math.random() * (arr.length) + 1) - 1;
 }
 
-
-function getSkillCharater(enableMoves, cooldownMoves) {
+// Функция выбора навыка игроком
+const getSkillCharater = function (enableMoves, cooldownMoves) {
     let trueSkill = true
     let Skill = 0
     while (trueSkill) {
-        if (isNaN(Skill = parseInt(readlineSync.question('What skill do you want to use? '), 10)) || Skill >= enableMoves.length || Skill < 0) {
+        Skill = parseInt(readlineSync.question('What skill do you want to use? '), 10)
+        if (isNaN(Skill) || Skill >= enableMoves.length || Skill < 0) {
             console.log("The skill is not correct. Try again")
             getLogSkill(enableMoves, cooldownMoves)
         } else {
             trueSkill = false
         }
     }
-    trueSkill = true
     return Skill
 }
 
-function cooldownTurn(skillNumber, enableMoves, cooldownMoves, movesArr) {
+// Функция блокировки использованных навыков
+const cooldownTurn = function (skillNumber, enableMoves, cooldownMoves, movesArr) {
+    // Добавление использованного навыка в массив cooldownMoves
     cooldownMoves.push(enableMoves[skillNumber])
+    // Удаление использованного навыка из массива enableMoves
     enableMoves.splice(skillNumber, 1)
-
+    // Проверка cooldown
     for (let index = 0; index < cooldownMoves.length; index++) {
+        // Если cooldown не равен 0, то уменьшать на 1
         if (cooldownMoves[index].cooldown != 0) {
             cooldownMoves[index].cooldown -= 1
         } else {
+            // Иначе пройтись по массиву всех навыков
+            // При условии, что в массиве cooldownMoves есть элементы
             for (let i = 0; i < movesArr.length; i++) {
                 if (cooldownMoves.length != 0) {
+                    // Сравнение по имени
                     if (cooldownMoves[index].name == movesArr[i].name) {
+                        // Запись исходного значения cooldown
                         cooldownMoves[index].cooldown = movesArr[i].cooldown
+                        // Добавление навыка в массив enableMoves
                         enableMoves.push(cooldownMoves[index])
+                        // Удаление навыка из массива cooldownMoves
                         cooldownMoves.splice(index, 1)
+                        // Уменьшение индекса
                         index--
+                        // Выход 
                         break
                     }
                 }
@@ -196,31 +237,33 @@ function cooldownTurn(skillNumber, enableMoves, cooldownMoves, movesArr) {
     }
 }
 
-function difficulty(characterXP) {
+// Функция выбора сложности/максимального здоровья игрока
+const difficulty = function (int) {
+    let XP = int
     let trueHeath = true
     while (trueHeath) {
-        if (isNaN(characterXP = parseInt(readlineSync.question('Maximum XP of the charater? '), 10)) || characterXP <= 0) {
+        XP = parseInt(readlineSync.question('Maximum XP of the charater? '), 10)
+        if (isNaN(XP) || XP <= 0) {
             console.log("The XP of the charater is not correct. Try again");
         } else {
             trueHeath = false
         }
     }
-    trueHeath = true
-    return characterXP
+    return XP
 }
 
-
-function getLogSkill(EnableMoves, cooldownMoves) {
-    console.log("Enable Moves:")
+// Функция отрисовки доступных навыков
+const getLogSkill = function (EnableMoves, cooldownMoves) {
+    console.log("--> Enable Moves:")
     for (let index = 0; index < EnableMoves.length; index++) {
         console.log(`${index}: ${EnableMoves[index].name}`)
     }
     if (cooldownMoves.length != 0) {
-        console.log("Cooldown Moves:")
+        console.log("--X Cooldown Moves:")
         for (let index = 0; index < cooldownMoves.length; index++) {
-            console.log(`${index}: ${cooldownMoves[index].name} cooldown: ${cooldownMoves[index].cooldown}`)
+            console.log(`(X): ${cooldownMoves[index].name} cooldown: ${cooldownMoves[index].cooldown}`)
         }
     }
 }
-
+// Старт игры
 turn(character, monster)
